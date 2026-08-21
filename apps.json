@@ -1,0 +1,75 @@
+{
+  "apps": [
+    {
+      "id": "modda-demo",
+      "slug": "modda-demo",
+      "name": "Modda Demo App",
+      "icon": "https://placehold.co/128x128/0A0A0F/00D9FF?text=M",
+      "package": "io.modda.demo",
+      "version": "1.0.0",
+      "versionCode": 1000,
+      "category": "Utilities",
+      "developer": "Modda Labs",
+      "fileName": "modda-demo.apk",
+      "filePath": "uploads/modda-demo.apk",
+      "fileSize": "12.4 MB",
+      "fileType": "apk",
+      "description": "A showcase application demonstrating the Modda distribution platform capabilities and design system.",
+      "htmlInfo": "<p>This demo app showcases the premium design language and functionality available through the Modda platform. It features a modern UI, smooth interactions, and professional polish.</p>",
+      "requirements": "Android 8.0+, 50MB free storage",
+      "androidVersion": "8.0 and up",
+      "architecture": "Universal (arm64-v8a, armeabi-v7a, x86_64)",
+      "screenshots": [
+        "https://placehold.co/400x800/111118/00D9FF?text=Screen+1",
+        "https://placehold.co/400x800/111118/7C3AED?text=Screen+2"
+      ],
+      "changelog": "Initial release with core functionality, polished UI, and full theme support.",
+      "releaseDate": "2026-08-01",
+      "tags": ["demo", "showcase", "premium"],
+      "featured": true,
+      "status": "published",
+      "downloadCount": 1284,
+      "websiteUrl": "https://github.com",
+      "telegramUrl": ""
+    },
+    {
+      "id": "skyline-editor",
+      "slug": "skyline-editor",
+      "name": "Skyline Editor",
+      "icon": "https://placehold.co/128x128/111118/7C3AED?text=S",
+      "package": "com.skyline.editor",
+      "version": "2.3.1",
+      "versionCode": 2310,
+      "category": "Productivity",
+      "developer": "Skyline Dev",
+      "fileName": "skyline-editor.apk",
+      "filePath": "uploads/skyline-editor.apk",
+      "fileSize": "24.7 MB",
+      "fileType": "apk",
+      "description": "A powerful mobile code editor with syntax highlighting and live preview.",
+      "htmlInfo": "<p>Skyline Editor brings desktop-class coding tools to your phone. Supports 30+ languages, Git integration, and cloud sync.</p>",
+      "requirements": "Android 9.0+, 100MB storage",
+      "androidVersion": "9.0 and up",
+      "architecture": "arm64-v8a",
+      "screenshots": [
+        "https://placehold.co/400x800/16161F/00D9FF?text=Editor",
+        "https://placehold.co/400x800/16161F/7C3AED?text=Preview"
+      ],
+      "changelog": "v2.3.1: Fixed memory leak in large files. Added Python 3.11 support.",
+      "releaseDate": "2026-07-15",
+      "tags": ["editor", "code", "productivity"],
+      "featured": true,
+      "status": "published",
+      "downloadCount": 5621,
+      "websiteUrl": "",
+      "telegramUrl": ""
+    }
+  ],
+  "config": {
+    "githubUser": "modda",
+    "githubRepo": "modda",
+    "branch": "main",
+    "siteTitle": "Modda",
+    "siteDescription": "Premium file distribution platform"
+  }
+}
