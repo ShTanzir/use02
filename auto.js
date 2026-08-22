@@ -32,7 +32,7 @@
 
   async function ensureDefaultCreds() {
     if (!localStorage.getItem(CREDS_KEY)) {
-      const hash = await sha256('modda-admin');
+      const hash = await sha256('admin');
       localStorage.setItem(CREDS_KEY, JSON.stringify({ username: 'admin', hash }));
     }
   }
