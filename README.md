@@ -1,294 +1,148 @@
-
 # Modda
 
-**Premium static file-distribution platform for GitHub Pages.** Publish APKs, mods, and digital downloads with a beautiful admin interface and zero backend required.
+A static, GitHub-Pages-friendly file distribution website. Publish APKs and
+other downloadable files straight from a GitHub repository — no backend,
+no database, no app store.
 
-![Modda](logo.svg)
+Modda has two parts:
 
----
-
-## ✨ Features
-
-- 🎨 Premium design system — dark/light themes, glassmorphism, micro-interactions
-- 📱 Fully responsive — mobile-first, desktop-optimized
-- 🔐 Admin panel with session auth, JSON import/export, GitHub file browser
-- 🔗 Deep links (`?app=slug`) for sharing specific apps
-- ⚡ Static-first — no build step, no server, no dependencies
-- 🔍 Search, filter, sort across your entire catalog
-- 📋 Copy direct download links with one click
+- **Public panel** (`index.html`) — a browsable, searchable catalog visitors use to find and download files.
+- **Admin panel** (`admin.html`) — a login-gated dashboard for managing the catalog and producing the `apps.json` you commit back to the repo.
 
 ---
 
-## 📁 Folder Structure
+## Folder structure
 
 ```
 modda/
-├── index.html       # Public storefront
-├── admin.html       # Admin dashboard
-├── auto.js          # Admin auth + logic
-├── app.js           # Public logic
-├── style.css        # Design system
-├── apps.json        # App catalog (editable)
-├── logo.svg         # Primary logo
-├── favicon.svg      # Favicon
-├── README.md        # This file
-└── uploads/         # Place uploaded files here
+├── index.html          Public panel (catalog, search, detail pages)
+├── admin.html           Admin panel (login, dashboard, editor, import/export)
+├── app.js                Public panel JavaScript
+├── auto.js                Admin authentication, session handling, and admin logic
+├── style.css               Shared design system (CSS variables, components)
+├── data/
+│   └── apps.json             The application catalog — the single source of truth
+├── uploads/
+│   └── (your .apk / .zip / .exe / .pdf files go here)
+├── assets/
+│   ├── logo.svg              Modda logo mark (navigation)
+│   ├── favicon.svg           Favicon (badge version of the mark)
+│   ├── favicon.ico           Fallback favicon
+│   ├── apple-touch-icon.png  iOS home-screen icon
+│   └── icon-512.png          Social-share / OG image
+└── README.md
 ```
 
----
+## Deploying to GitHub Pages
 
-## 🚀 Deployment (GitHub Pages)
+1. Create (or reuse) a GitHub repository and push this folder's contents to it.
+2. In the repo, go to **Settings → Pages**, set the source branch (e.g. `main`) and root folder, then save.
+3. Your site will be live at `https://USERNAME.github.io/REPOSITORY/`.
+4. Open `admin.html` on that URL and go to **Site settings** to enter your GitHub username, repository name, and branch — this is what the app uses to build direct download links and to browse `uploads/` through the GitHub API. It works the same whether the site is served from a custom domain or from a repository subpath, since every path in the app is relative.
 
-### Step 1 — Create Repository
+## Uploading files
 
-Create a new **public** GitHub repository (recommended for GitHub Pages).
+GitHub Pages is static — a browser can't write files into your repository.
+Files always go into `uploads/` the normal GitHub way:
 
-### Step 2 — Upload Files
+- Drag and drop files into `uploads/` on github.com, **or**
+- `git add uploads/your-file.apk && git commit && git push` from your machine.
 
-Push all files from this template to the repository's `main` branch.
+Once a file is pushed, open **admin.html → Uploads browser** and click
+**Refresh** to list everything currently in `uploads/` (via the public GitHub
+Contents API — public repositories only, and subject to GitHub's anonymous
+rate limit). Click a file to auto-fill its name, path, and size into a new
+catalog entry, or type a path manually if you'd rather skip the browser.
 
-### Step 3 — Enable GitHub Pages
+## Adding or editing an application
 
-1. Go to **Settings** → **Pages**
-2. Under **Source**, select:
-   - **Branch:** `main`
-   - **Folder:** `/ (root)`
-3. Click **Save**
+1. Open `admin.html` and sign in (see **Admin access** below).
+2. Go to **Applications → Add application**, or click **Edit** on an existing row.
+3. Fill in the required fields (name, package, category, version, file name, description) — the form validates before it lets you save.
+4. Pick the uploaded file from the **Uploads browser**, or type its repo path directly into **Repository path**. The **Direct download URL** field fills in automatically from your Site settings.
+5. Use **Preview** to see the public card before publishing, **Duplicate** to clone an entry, and the **Featured** switch to show it on the homepage.
+6. Click **Save application**. Changes are kept in this browser only until you export them.
 
-Your site will be live at:
-```
-https://<username>.github.io/<repo>/
-```
+## Exporting and publishing changes
 
-### Step 4 — Configure
+The admin panel edits a copy of the catalog stored in your browser
+(`localStorage`) — nothing is written back to GitHub automatically. To
+publish:
 
-Edit `apps.json` and `auto.js` with your repository details (see Configuration section below).
+1. Go to **Import / Export**.
+2. Click **Download apps.json** (or **Copy JSON to clipboard**).
+3. Replace `data/apps.json` in your repository with the new file and commit/push.
+4. The public site reads `data/apps.json` fresh on every load, so the change goes live as soon as GitHub Pages rebuilds (usually under a minute).
 
----
+**Import** lets you paste or upload a JSON file to load it back into the admin panel — handy for continuing edits on another device, or restoring a previous export. It validates that `apps` is an array and that every entry has an `id` and `name` before replacing the working catalog, and reports what's wrong if it doesn't.
 
-## ⚙️ Configuration
+## Changing the GitHub configuration
 
-### GitHub Repo Settings
-
-Edit the `config` block inside `apps.json` **and** the `CONFIG` object at the top of `auto.js`:
-
-```json
-"config": {
-  "githubUser": "your-username",
-  "githubRepo": "modda",
-  "branch": "main",
-  "siteTitle": "Modda",
-  "siteDescription": "Premium file distribution"
-}
-```
-
-All download URLs are automatically derived from this config:
-
-```
-https://<githubUser>.github.io/<githubRepo>/<filePath>
-```
-
-**Example:**
-- `filePath: "uploads/myapp.apk"`
-- Generated URL: `https://yourname.github.io/modda/uploads/myapp.apk`
-
-### SEO / Meta
-
-Update in `index.html`:
-- `<title>`
-- `<meta name="description">`
-- `<meta name="theme-color">`
-- Open Graph tags (`og:title`, `og:description`, `og:image`)
-
----
-
-## 📦 How to Add Applications
-
-### Method 1: Via Admin Panel (Recommended)
-
-1. Visit `https://<your-site>/admin.html`
-2. Sign in (default credentials: `admin` / `admin123`)
-3. Click **+ Add App** from the sidebar
-4. Fill in app details:
-   - Name, package name, version, category, developer
-   - Icon URL, description, HTML-rich info
-   - Screenshots, changelog, tags
-5. Click **📁 Fetch from GitHub** to browse the `uploads/` folder
-6. Select a file → path/size auto-fill automatically
-7. Click **Save**
-8. Go to **Import / Export** tab
-9. Click **Copy JSON** or **Download file**
-10. Commit the exported `apps.json` to your repository
-
-> ⚠️ **Important:** Changes only persist locally until you export and commit `apps.json` back to the repo.
-
-### Method 2: Manual JSON Editing
-
-Add a new object to the `apps` array in `apps.json`:
+`data/apps.json` includes a `config` object:
 
 ```json
 {
-  "id": "my-app",
-  "slug": "my-app",
-  "name": "My App",
-  "icon": "https://...",
-  "package": "com.example.myapp",
-  "version": "1.0.0",
-  "versionCode": 1000,
-  "category": "Utilities",
-  "developer": "My Name",
-  "fileName": "myapp.apk",
-  "filePath": "uploads/myapp.apk",
-  "fileSize": "15 MB",
-  "fileType": "apk",
-  "description": "Short description",
-  "htmlInfo": "<p>Rich HTML description allowed.</p>",
-  "requirements": "Android 8.0+",
-  "androidVersion": "8.0 and up",
-  "architecture": "arm64-v8a",
-  "screenshots": ["https://...", "https://..."],
-  "changelog": "Initial release",
-  "releaseDate": "2026-08-21",
-  "tags": ["utility", "premium"],
-  "featured": true,
-  "status": "published",
-  "downloadCount": 0,
-  "websiteUrl": "",
-  "telegramUrl": ""
+  "config": {
+    "githubUsername": "your-username",
+    "githubRepo": "modda",
+    "githubBranch": "main",
+    "siteTitle": "Modda",
+    "uploadsPath": "uploads"
+  },
+  "apps": [ ... ]
 }
 ```
 
----
-
-## 🔐 Admin Security (Important!)
-
-> ⚠️ **This is a UI-only gate.** GitHub Pages is purely static — there is NO server-side auth.
-
-The admin login:
-- Hashes passwords with SHA-256 in the browser
-- Stores session in `localStorage`
-- Expires after 8 hours
-- **Does not prevent anyone from accessing `admin.html`**
-
-### Changing the Default Password
-
-1. Open browser DevTools console
-2. Run this to generate a new hash:
-   ```js
-   crypto.subtle.digest('SHA-256', new TextEncoder().encode('YOUR_NEW_PASSWORD'))
-     .then(h => console.log([...new Uint8Array(h)].map(b => b.toString(16).padStart(2,'0')).join('')));
-   ```
-3. Copy the output hash
-4. Replace `passwordHash` in the `CONFIG` object at the top of `auto.js`
-
-### For True Security, Consider:
-
-- 🔑 **GitHub OAuth** via Cloudflare Workers / Vercel Edge Functions
-- 🛡️ **Cloudflare Access** password-protection layer
-- 📝 **GitHub App** for signed, authenticated commits
-- 🔒 **Private repository** with token-based access
-
-**Default credentials:**
-- Username: `admin`
-- Password: `admin123`
-
----
-
-## 🔗 Deep Links
-
-Share any app directly using the `?app=` parameter:
+Edit these either directly in the JSON or from **admin.html → Site settings**
+(which edits the same values in your local working copy — export afterward
+to persist them). Every direct download link is generated from this config
+plus each app's `filePath`, following the pattern:
 
 ```
-https://yourname.github.io/modda/?app=my-app-slug
+https://{githubUsername}.github.io/{githubRepo}/{filePath}
 ```
 
-The public site will automatically open the matching app's detail modal.
+Filenames with spaces or special characters are URL-encoded automatically.
+If an entry sets its own `directDownloadUrl`, that value is used as-is
+instead (useful for files hosted elsewhere, or GitHub Releases assets).
 
----
+## Admin access — please read
 
-## 📥 Direct Downloads
+`admin.html` is protected by a **frontend-only login gate**: a username and
+a SHA-256 password hash stored in `localStorage`. This keeps casual visitors
+out of the editor, but it is **not real server-side security** — anyone who
+views this static site's source can see how the check works, and GitHub
+Pages has no way to enforce access control on its own. Don't rely on this
+for anything sensitive.
 
-Every app has two ways to share files:
+- Default credentials: `admin` / `modda-admin`. Change them immediately from **admin.html → Site settings → Change admin password** before publishing this site anywhere public.
+- Sessions expire after 2 hours of inactivity (stored in `sessionStorage`, cleared on tab close).
+- For genuine access control, put `admin.html` behind GitHub OAuth, a GitHub App, or a small backend proxy — none of which are included here, since they require infrastructure beyond static Pages hosting.
 
-1. **Download button** — triggers direct file download
-2. **Copy Link button** — copies the direct URL to clipboard
+## Data model
 
-URL format:
-```
-https://<githubUser>.github.io/<githubRepo>/<url-encoded-filePath>
-```
+Each entry in `apps.json` → `apps[]` supports:
 
-Spaces and special characters in file names are automatically URL-encoded.
+`id`, `name`, `slug`, `icon`, `package`, `version`, `versionCode`,
+`category`, `developer`, `fileName`, `filePath`, `fileSize`, `fileType`,
+`directDownloadUrl`, `description`, `htmlInfo`, `requirements`,
+`androidVersion`, `architecture`, `screenshots[]`, `changelog[]`,
+`releaseDate`, `tags[]`, `featured`, `status` (`published` / `draft` /
+`archived`), `downloadCount`, `websiteUrl`, `telegramUrl`.
 
----
+`htmlInfo` accepts a small set of safe HTML (paragraphs, lists, links, code)
+— it's sanitized on render to strip scripts, event handlers, and other
+unsafe content, so don't rely on it for arbitrary markup.
 
-## 🖼️ Uploading Files
+## Local preview
 
-### Via GitHub Web Interface
-
-1. Go to your repo on GitHub.com
-2. Navigate to the `uploads/` folder
-3. Click **Add file** → **Upload files**
-4. Drag & drop your APK/ZIP/PDF/etc.
-5. Commit changes
-
-### Via Git
+No build step is required. Serve the folder with any static file server, e.g.:
 
 ```bash
-git add uploads/myapp.apk
-git commit -m "Add myapp v1.0"
-git push origin main
+python3 -m http.server 8080
 ```
 
-### Via GitHub API (from Admin Panel)
-
-Click **📁 Fetch from GitHub** in the editor to browse and select files already uploaded to `uploads/`.
-
----
-
-## 🛠️ Development (Optional)
-
-No build tools required. Serve locally with any static server:
-
-```bash
-# Python
-python3 -m http.server 8000
-
-# Node.js (npx)
-npx serve .
-
-# PHP
-php -S localhost:8000
-```
-
-Then visit `http://localhost:8000`.
-
----
-
-## 🌐 Browser Support
-
-- ✅ Chrome / Edge (latest 2 versions)
-- ✅ Firefox (latest 2 versions)
-- ✅ Safari 14+
-- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
-- ❌ Internet Explorer (not supported)
-
----
-
-## 📜 License
-
-MIT — use freely, credit appreciated.
-
----
-
-## 🙏 Credits
-
-Built with vanilla HTML5, CSS3, and JavaScript.  
-Design inspiration: premium app distribution platforms.  
-Hosted on GitHub Pages.
-
----
-
-**Built with ❤️ for the Modda project.**
-
-
+Then open `http://localhost:8080/index.html` and `http://localhost:8080/admin.html`.
+(Opening the HTML files directly via `file://` mostly works, but `fetch()`
+for `data/apps.json` is blocked by some browsers under `file://` — a local
+server avoids that.)
