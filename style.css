@@ -123,6 +123,14 @@ ul { margin: 0; padding: 0; list-style: none; }
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* Hard guarantee that the [hidden] attribute always wins, even over
+   components that set an explicit `display` (flex/grid/etc.) on the same
+   element — author rules otherwise beat the browser's default [hidden]
+   rule regardless of specificity, which would leave modals/gated views
+   visible. */
+[hidden] { display: none !important; }
+
 .skip-link {
   position: absolute; left: -999px; top: 0; z-index: 999;
   background: var(--accent-1); color: #fff; padding: 10px 16px; border-radius: 0 0 8px 0;
