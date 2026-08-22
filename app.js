@@ -168,9 +168,31 @@
   }
 
   /* ---------- Data loading ---------- */
+  function tryLoadLocalDraft() {
+    try {
+      const raw = localStorage.getItem('modda-catalog');
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.apps)) return null;
+      return parsed;
+    } catch { return null; }
+  }
+
   async function loadData() {
     state.loading = true;
     renderSkeletons();
+
+    const draft = tryLoadLocalDraft();
+    if (draft) {
+      state.config = draft.config || {};
+      state.apps = draft.apps.filter((a) => a && a.id && a.status !== 'archived');
+      state.loading = false;
+      state.loadError = null;
+      state.isLocalDraft = true;
+      afterDataReady();
+      return;
+    }
+
     try {
       const res = await fetch(DATA_URL, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -180,6 +202,7 @@
       state.apps = json.apps.filter((a) => a && a.id && a.status !== 'archived');
       state.loading = false;
       state.loadError = null;
+      state.isLocalDraft = false;
     } catch (err) {
       state.loading = false;
       state.loadError = err.message || 'Unknown error';
@@ -190,11 +213,31 @@
   }
 
   function afterDataReady() {
+    renderDraftBanner();
     populateCategories();
     applyDeepLinkOrGrid();
     renderStats();
     renderFeatured();
   }
+
+  function renderDraftBanner() {
+    const el = $('#draftBanner');
+    if (!el) return;
+    if (!state.isLocalDraft) { el.innerHTML = ''; return; }
+    el.innerHTML = `
+      <div class="container">
+        <div class="alert-banner info" style="margin-top:16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+          <span>You're viewing a local draft catalog saved from the admin panel in this browser — other visitors still see the published <code>data/apps.json</code>. Export and commit it to make these changes live for everyone.
+          <button type="button" id="clearDraftBtn" class="btn btn-ghost btn-sm" style="margin-left:8px;padding:4px 10px;min-height:auto;">View published version</button></span>
+        </div>
+      </div>`;
+    $('#clearDraftBtn')?.addEventListener('click', () => {
+      localStorage.removeItem('modda-catalog');
+      loadData();
+    });
+  }
+
 
   /* ---------- Categories & filtering ---------- */
   function populateCategories() {
@@ -356,8 +399,10 @@
   function renderFeatured() {
     const wrap = $('#featuredGrid');
     if (!wrap) return;
+    const section = wrap.closest('.featured-section');
     const list = getPublished().filter((a) => a.featured).slice(0, 3);
-    if (!list.length) { wrap.closest('.featured-section')?.classList.add('visually-hidden'); return; }
+    if (!list.length) { section?.classList.add('visually-hidden'); return; }
+    section?.classList.remove('visually-hidden');
     wrap.innerHTML = list.map(cardHtml).join('');
   }
 

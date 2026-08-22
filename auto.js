@@ -464,7 +464,29 @@
     try {
       const url = `https://api.github.com/repos/${encodeURIComponent(user)}/${encodeURIComponent(repo)}/contents/${path.split('/').map(encodeURIComponent).join('/')}?ref=${encodeURIComponent(branch)}`;
       const res = await fetch(url, { headers: { Accept: 'application/vnd.github+json' } });
-      if (!res.ok) throw new Error(res.status === 404 ? 'uploads/ folder not found in that repository' : `GitHub API error (${res.status})`);
+
+      if (!res.ok) {
+        let body = {};
+        try { body = await res.json(); } catch { /* ignore non-JSON error bodies */ }
+        const remaining = res.headers.get('x-ratelimit-remaining');
+        const resetHeader = res.headers.get('x-ratelimit-reset');
+
+        if (res.status === 403 && remaining === '0') {
+          const resetTime = resetHeader ? new Date(Number(resetHeader) * 1000) : null;
+          const waitMsg = resetTime
+            ? `Resets around ${resetTime.toLocaleTimeString()} (in ${Math.max(1, Math.round((resetTime - Date.now()) / 60000))} min).`
+            : 'It resets on a rolling basis, usually within the hour.';
+          throw new Error(`GitHub's unauthenticated API limit (60 requests/hour, shared by everyone on your network) is used up. ${waitMsg} Use "manual path entry" below in the meantime.`);
+        }
+        if (res.status === 403) {
+          throw new Error(body.message ? `GitHub blocked this request: ${body.message}` : 'GitHub blocked this request (403) — the repository may be private, or access was denied. This browser call only works for public repositories.');
+        }
+        if (res.status === 404) {
+          throw new Error(`No "${path}/" folder found in ${user}/${repo} on branch "${branch}" — check Site settings, or create the folder and push a file to it first.`);
+        }
+        throw new Error(body.message ? `GitHub API error (${res.status}): ${body.message}` : `GitHub API error (${res.status})`);
+      }
+
       const items = await res.json();
       uploadsCache = Array.isArray(items) ? items.filter((i) => i.type === 'file') : [];
       if (!uploadsCache.length) {
