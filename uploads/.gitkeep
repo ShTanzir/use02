@@ -1,6 +1,0 @@
-This file keeps the uploads/ folder tracked by git.
-Delete it once you add your first real file here.
-
-Put your APK, ZIP, EXE, PDF, or other downloadable files directly in this
-folder, then reference them from the admin panel (Uploads browser, or by
-typing the path manually) so the catalog can generate a direct download URL.
